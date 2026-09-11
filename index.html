@@ -59,9 +59,17 @@
             transition: transform 0.1s;
         }
 
-        #start-btn:hover {
+        #start-btn:hover:not(:disabled) {
             transform: scale(1.05);
             background-color: #ffdd33;
+        }
+
+        /* 按鈕禁用時的樣式 */
+        #start-btn:disabled {
+            background-color: #666;
+            color: #aaa;
+            cursor: not-allowed;
+            box-shadow: none;
         }
 
         /* 儀表板區域：寬度 1200px */
@@ -143,11 +151,11 @@
 <body>
 
     <div id="game-container">
-        <!-- 加入 margin: 0 auto 讓影片在 1200px 容器中置中 -->
         <div style="position: relative; width: 900px; margin: 0 auto;">
             <video id="game-video" src="music.mp4" controls playsinline></video>
             <div id="start-screen">
-                <button id="start-btn">點擊開始遊戲</button>
+                <!-- 初始狀態設定為 disabled 並顯示載入中 -->
+                <button id="start-btn" disabled>載入中...</button>
             </div>
         </div>
         
@@ -199,7 +207,20 @@
                 missed: false
             }));
 
+        // 監聽影片是否可以順暢播放（canplaythrough），好了之後才解鎖按鈕
+        video.addEventListener('canplaythrough', () => {
+            startBtn.disabled = false;
+            startBtn.textContent = "點擊開始遊戲";
+        });
+
+        // 如果影片已經在快取中載入完成，手動觸發一次防範事件漏接
+        if (video.readyState >= 4) {
+            startBtn.disabled = false;
+            startBtn.textContent = "點擊開始遊戲";
+        }
+
         startBtn.addEventListener('click', () => {
+            if (startBtn.disabled) return; // 確保未解鎖時不能點擊
             startScreen.style.display = 'none';
             video.play();
             gameStarted = true;
