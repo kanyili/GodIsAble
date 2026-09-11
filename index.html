@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>網頁太鼓達人</title>
+    <style>
+        body {
+            background-color: #1a1a1a;
+            color: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding-top: 20px;
+        }
+
+        /* 整個遊戲容器寬度保持 1200px 置中 */
+        #game-container {
+            margin: 0 auto;
+            width: 1200px;
+            position: relative;
+        }
+
+        /* 影片維持原本的 900px 寬度 */
+        video {
+            width: 900px;
+            border: 3px solid #444;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            display: block;
+        }
+
+        /* 開始遊戲遮罩大小對應影片大小 */
+        #start-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 900px;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.85);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border-radius: 12px;
+            z-index: 20;
+        }
+
+        #start-btn {
+            padding: 15px 35px;
+            font-size: 24px;
+            font-weight: bold;
+            background-color: #ffcc00;
+            color: #1a1a1a;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(255, 204, 0, 0.4);
+            transition: transform 0.1s;
+        }
+
+        #start-btn:hover {
+            transform: scale(1.05);
+            background-color: #ffdd33;
+        }
+
+        /* 儀表板區域：寬度 1200px */
+        #dashboard {
+            margin-top: 15px;
+            width: 1200px;
+            height: 160px;
+            background-color: #333;
+            border: 3px solid #555;
+            border-radius: 12px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            box-sizing: border-box;
+        }
+
+        /* 分數顯示在白色圓圈左邊 */
+        #score-display {
+            position: absolute;
+            left: 40px;
+            font-size: 40px;
+            font-weight: bold;
+            color: #ffcc00;
+            z-index: 10;
+        }
+
+        /* 靜態判定區放大 (左側目標圓圈位置維持原位) */
+        #judge-line {
+            position: absolute;
+            left: 170px;
+            width: 110px;
+            height: 110px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 4px solid #eee;
+            border-radius: 50%;
+            z-index: 10;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 50px;
+            color: #fff;
+            box-shadow: 0 0 15px rgba(255,255,255,0.3);
+            transition: transform 0.1s;
+        }
+
+        /* 圓圈閃爍動畫效果 */
+        @keyframes flashEffect {
+            0% { transform: scale(1); border-color: #eee; background-color: rgba(255,255,255,0.1); }
+            50% { transform: scale(1.15); border-color: #ffcc00; background-color: rgba(255,204,0,0.4); box-shadow: 0 0 25px #ffcc00; }
+            100% { transform: scale(1); border-color: #eee; background-color: rgba(255,255,255,0.1); }
+        }
+        .flash {
+            animation: flashEffect 0.15s ease;
+        }
+
+        /* Canvas 軌道畫布配合儀表板寬度 */
+        #game-canvas {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        /* 提示訊息區 */
+        #feedback {
+            margin-top: 10px;
+            font-size: 22px;
+            font-weight: bold;
+            height: 30px;
+            color: #ff4444;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="game-container">
+        <!-- 加入 margin: 0 auto 讓影片在 1200px 容器中置中 -->
+        <div style="position: relative; width: 900px; margin: 0 auto;">
+            <video id="game-video" src="music.mp4" controls playsinline></video>
+            <div id="start-screen">
+                <button id="start-btn">點擊開始遊戲</button>
+            </div>
+        </div>
+        
+        <div id="dashboard">
+            <div id="score-display">0分</div>
+            <div id="judge-line">◎</div>
+            <canvas id="game-canvas" width="1200" height="160"></canvas>
+        </div>
+        <div id="feedback"></div>
+    </div>
+
+    <!-- 譜面資料區 -->
+    <script id="chart-data" type="application/json">
+    [
+        { "time": 5.7, "key": "Space", "type": "space" },
+        { "time": 5.9, "key": "Space", "type": "space" },
+        { "time": 6.8, "key": "Space", "type": "space" },
+        { "time": 7.8, "key": "Space", "type": "space" },
+        { "time": 8.7, "key": "Space", "type": "space" },
+        { "time": 9.5, "key": "Space", "type": "space" },
+        { "time": 10.5, "key": "Space", "type": "space" }
+    ]
+    </script>
+
+    <script>
+        const video = document.getElementById('game-video');
+        const startScreen = document.getElementById('start-screen');
+        const startBtn = document.getElementById('start-btn');
+        const canvas = document.getElementById('game-canvas');
+        const ctx = canvas.getContext('2d');
+        const judgeLine = document.getElementById('judge-line');
+        const scoreDisplay = document.getElementById('score-display');
+        const feedback = document.getElementById('feedback');
+        
+        const PREVIEW_TIME = 1.5; 
+        const JUDGE_X = 225;      
+        const SPAWN_X = 1150;     
+        const HIT_WINDOW = 0.2;   
+
+        let score = 0;
+        let gameStarted = false;
+
+        const rawChart = JSON.parse(document.getElementById('chart-data').textContent);
+        const chart = rawChart
+            .sort((a, b) => a.time - b.time)
+            .map(note => ({
+                ...note,
+                hit: false,
+                missed: false
+            }));
+
+        startBtn.addEventListener('click', () => {
+            startScreen.style.display = 'none';
+            video.play();
+            gameStarted = true;
+        });
+
+        video.addEventListener('seeking', () => {
+            const currentTime = video.currentTime;
+            chart.forEach(note => {
+                if (note.time >= currentTime - HIT_WINDOW) {
+                    note.hit = false;
+                    note.missed = false;
+                }
+            });
+        });
+
+        function drawNote(x, y, type) {
+            ctx.save();
+            ctx.translate(x, y);
+
+            const radius = 40;
+
+            let baseColor = '#ffffff';
+            let glowColor = 'rgba(255, 255, 255, 0.6)';
+
+            if (type === 'left') { baseColor = '#4a90e2'; glowColor = 'rgba(74, 144, 226, 0.8)'; }
+            else if (type === 'right') { baseColor = '#e04a4a'; glowColor = 'rgba(224, 74, 74, 0.8)'; }
+            else if (type === 'up') { baseColor = '#7ed321'; glowColor = 'rgba(126, 211, 33, 0.8)'; }
+            else if (type === 'down') { baseColor = '#b8e986'; glowColor = 'rgba(184, 233, 134, 0.8)'; }
+            else if (type === 'space') { baseColor = '#ffffff'; glowColor = 'rgba(255, 255, 255, 0.8)'; }
+
+            ctx.shadowColor = glowColor;
+            ctx.shadowBlur = 12;
+            ctx.fillStyle = 'rgba(30, 30, 30, 0.85)';
+            ctx.beginPath();
+            ctx.arc(0, 0, radius, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.lineWidth = 5;
+            ctx.strokeStyle = baseColor;
+            ctx.stroke();
+
+            ctx.shadowBlur = 0;
+            ctx.fillStyle = baseColor;
+
+            if (type === 'space') {
+                ctx.font = 'bold 16px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('SPACE', 0, 0);
+            } else {
+                ctx.beginPath();
+                ctx.lineWidth = 5;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+
+                let angle = 0;
+                if (type === 'left') angle = Math.PI;       
+                if (type === 'right') angle = 0;            
+                if (type === 'up') angle = -Math.PI / 2;    
+                if (type === 'down') angle = Math.PI / 2;   
+
+                ctx.rotate(angle);
+                ctx.moveTo(-14, 0);
+                ctx.lineTo(14, 0);
+                ctx.moveTo(-3, -11);
+                ctx.lineTo(14, 0);
+                ctx.lineTo(-3, 11);
+                ctx.stroke();
+            }
+
+            ctx.restore();
+        }
+
+        function updateGame() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            if (gameStarted && !video.paused && !video.ended) {
+                const currentTime = video.currentTime;
+
+                chart.forEach((noteData) => {
+                    if (noteData.hit || noteData.missed) return;
+
+                    const timeDiff = noteData.time - currentTime;
+
+                    if (timeDiff < -HIT_WINDOW) {
+                        noteData.missed = true;
+                        return;
+                    }
+
+                    if (timeDiff <= PREVIEW_TIME) {
+                        const progress = 1 - (timeDiff / PREVIEW_TIME);
+                        const currentX = SPAWN_X - (SPAWN_X - JUDGE_X) * progress;
+                        const currentY = canvas.height / 2;
+
+                        drawNote(currentX, currentY, noteData.type);
+                    }
+                });
+            }
+            requestAnimationFrame(updateGame);
+        }
+
+        requestAnimationFrame(updateGame);
+
+        function triggerFlash() {
+            judgeLine.classList.remove('flash');
+            void judgeLine.offsetWidth;
+            judgeLine.classList.add('flash');
+        }
+
+        window.addEventListener('keydown', (event) => {
+            if (!gameStarted) return;
+
+            if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(event.key)) {
+                event.preventDefault();
+            }
+
+            let pressedKey = event.code;
+            if (event.key === ' ') pressedKey = 'Space';
+
+            if (['Space', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(pressedKey)) {
+                triggerFlash();
+            }
+
+            const currentTime = video.currentTime;
+            let matchedNote = null;
+
+            for (let i = 0; i < chart.length; i++) {
+                const note = chart[i];
+                if (!note.hit && !note.missed) {
+                    const timeDiff = currentTime - note.time;
+                    if (Math.abs(timeDiff) <= HIT_WINDOW) {
+                        matchedNote = note;
+                        break;
+                    }
+                    if (timeDiff < -HIT_WINDOW) {
+                        break; 
+                    }
+                }
+            }
+
+            if (matchedNote) {
+                if (pressedKey === matchedNote.key) {
+                    score += 1;
+                    matchedNote.hit = true;
+                    feedback.textContent = "";
+                } else {
+                    score -= 1;
+                    feedback.textContent = "按錯鍵";
+                }
+            } else {
+                score -= 1;
+                feedback.textContent = "太快了";
+            }
+            
+            scoreDisplay.textContent = `${score}分`;
+        });
+    </script>
+
+</body>
+</html>
