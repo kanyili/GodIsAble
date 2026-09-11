@@ -12,7 +12,7 @@
             text-align: center;
             margin: 0;
             padding: 0;
-            overflow: hidden; /* 禁止任何捲動軸 */
+            overflow: hidden;
             width: 100vw;
             height: 100vh;
             display: flex;
@@ -20,24 +20,28 @@
             align-items: center;
         }
 
-        /* 外部包裝容器，負責固定基準尺寸並進行等比縮放 */
         #game-wrapper {
             width: 1200px;
-            height: 700px;
+            height: 760px;
             position: relative;
             transform-origin: center center;
         }
 
-        /* 整個遊戲內部容器 */
         #game-container {
             width: 1200px;
             position: relative;
         }
 
-        /* YouTube 播放器外框維持 900px 寬度並置中 */
+        /* 影片外層容器維持相對定位，以便左右按鈕定位 */
+        #player-wrapper {
+            position: relative;
+            width: 900px;
+            margin: 0 auto;
+        }
+
         #player-container {
             width: 900px;
-            height: 506px; /* 16:9 比例 */
+            height: 506px;
             margin: 0 auto;
             border: 3px solid #444;
             border-radius: 12px;
@@ -53,6 +57,36 @@
             display: block;
         }
 
+        /* 影片左右兩側的白色圓圈按鈕樣式 */
+        .side-judge-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 90px;
+            height: 90px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 4px solid #eee;
+            border-radius: 50%;
+            z-index: 25;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 40px;
+            color: #fff;
+            box-shadow: 0 0 15px rgba(255,255,255,0.3);
+            touch-action: manipulation;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        #left-side-btn {
+            left: -150px; /* 放在影片左側外圍 */
+        }
+
+        #right-side-btn {
+            right: -150px; /* 放在影片右側外圍 */
+        }
+
         /* 開始遊戲遮罩大小對應播放器大小 */
         #start-screen {
             position: absolute;
@@ -66,7 +100,7 @@
             justify-content: center;
             align-items: center;
             border-radius: 12px;
-            z-index: 20;
+            z-index: 30;
         }
 
         #start-btn {
@@ -94,7 +128,6 @@
             box-shadow: none;
         }
 
-        /* 儀表板區域：寬度 1200px 置中 */
         #dashboard {
             margin-top: 15px;
             width: 1200px;
@@ -141,11 +174,23 @@
         }
 
         @keyframes flashEffect {
+            0% { transform: scale(1) translateY(-50%); border-color: #eee; background-color: rgba(255,255,255,0.1); }
+            50% { transform: scale(1.15) translateY(-43%); border-color: #ffcc00; background-color: rgba(255,204,0,0.4); box-shadow: 0 0 25px #ffcc00; }
+            100% { transform: scale(1) translateY(-50%); border-color: #eee; background-color: rgba(255,255,255,0.1); }
+        }
+        
+        /* 針對下方圓圈獨立的閃爍動畫（不需要 translateY） */
+        @keyframes flashEffectBottom {
             0% { transform: scale(1); border-color: #eee; background-color: rgba(255,255,255,0.1); }
             50% { transform: scale(1.15); border-color: #ffcc00; background-color: rgba(255,204,0,0.4); box-shadow: 0 0 25px #ffcc00; }
             100% { transform: scale(1); border-color: #eee; background-color: rgba(255,255,255,0.1); }
         }
+
         .flash {
+            animation: flashEffectBottom 0.15s ease;
+        }
+
+        .side-flash {
             animation: flashEffect 0.15s ease;
         }
 
@@ -173,8 +218,15 @@
 
     <div id="game-wrapper">
         <div id="game-container">
-            <div id="player-container">
-                <div id="youtube-player"></div>
+            <!-- 影片與左右兩側按鈕的包裝容器 -->
+            <div id="player-wrapper">
+                <div id="left-side-btn" class="side-judge-btn">◎</div>
+                <div id="right-side-btn" class="side-judge-btn">◎</div>
+                
+                <div id="player-container">
+                    <div id="youtube-player"></div>
+                </div>
+
                 <div id="start-screen">
                     <button id="start-btn" disabled>載入中...</button>
                 </div>
@@ -206,22 +258,21 @@
     <script src="https://www.youtube.com/iframe_api"></script>
 
     <script>
-        // 自動等比縮放計算
         function resizeGame() {
             const wrapper = document.getElementById('game-wrapper');
             const baseWidth = 1200;
-            const baseHeight = 760;
+            const baseHeight = 840; // 調整過的高寬比基準，確保手機橫放不卡邊
 
             const scaleX = window.innerWidth / baseWidth;
             const scaleY = window.innerHeight / baseHeight;
-            const scale = Math.min(scaleX, scaleY); // 取較小值確保完整塞入螢幕
+            const scale = Math.min(scaleX, scaleY);
 
             wrapper.style.transform = `scale(${scale})`;
         }
 
         window.addEventListener('resize', resizeGame);
         window.addEventListener('orientationchange', resizeGame);
-        resizeGame(); // 初始化時執行
+        resizeGame();
 
         let player;
         const startScreen = document.getElementById('start-screen');
@@ -229,6 +280,8 @@
         const canvas = document.getElementById('game-canvas');
         const ctx = canvas.getContext('2d');
         const judgeLine = document.getElementById('judge-line');
+        const leftSideBtn = document.getElementById('left-side-btn');
+        const rightSideBtn = document.getElementById('right-side-btn');
         const scoreDisplay = document.getElementById('score-display');
         const feedback = document.getElementById('feedback');
         
@@ -386,16 +439,20 @@
 
         requestAnimationFrame(updateGame);
 
-        function triggerFlash() {
-            judgeLine.classList.remove('flash');
-            void judgeLine.offsetWidth;
-            judgeLine.classList.add('flash');
+        function triggerFlash(targetElement) {
+            targetElement.classList.remove('flash', 'side-flash');
+            void targetElement.offsetWidth;
+            if (targetElement === judgeLine) {
+                targetElement.classList.add('flash');
+            } else {
+                targetElement.classList.add('side-flash');
+            }
         }
 
-        function handleInput(pressedKey) {
+        function handleInput(pressedKey, element = judgeLine) {
             if (!gameStarted || !player) return;
 
-            triggerFlash();
+            triggerFlash(element);
 
             const currentTime = player.getCurrentTime();
             let matchedNote = null;
@@ -442,13 +499,26 @@
             if (event.key === ' ') pressedKey = 'Space';
 
             if (['Space', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(pressedKey)) {
-                handleInput(pressedKey);
+                handleInput(pressedKey, judgeLine);
             }
         });
 
+        // 下方圓圈觸控事件
         judgeLine.addEventListener('touchstart', (event) => {
             event.preventDefault();
-            handleInput('Space');
+            handleInput('Space', judgeLine);
+        }, { passive: false });
+
+        // 左側圓圈觸控事件 (預設對應 Space 或可自行調整判定)
+        leftSideBtn.addEventListener('touchstart', (event) => {
+            event.preventDefault();
+            handleInput('Space', leftSideBtn);
+        }, { passive: false });
+
+        // 右側圓圈觸控事件 (預設對應 Space 或可自行調整判定)
+        rightSideBtn.addEventListener('touchstart', (event) => {
+            event.preventDefault();
+            handleInput('Space', rightSideBtn);
         }, { passive: false });
     </script>
 
