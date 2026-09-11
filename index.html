@@ -114,6 +114,9 @@
             color: #fff;
             box-shadow: 0 0 15px rgba(255,255,255,0.3);
             transition: transform 0.1s;
+            /* 避免手機瀏覽器為了偵測雙擊縮放而產生的點擊延遲 */
+            touch-action: manipulation;
+            cursor: pointer;
         }
 
         /* 圓圈閃爍動畫效果 */
@@ -294,7 +297,6 @@
         function updateGame() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // 移除了 !video.paused 的限制，只要遊戲開始且未結束，暫停時也能持續繪製當前時間的音符
             if (gameStarted && !video.ended) {
                 const currentTime = video.currentTime;
 
@@ -331,19 +333,11 @@
             judgeLine.classList.add('flash');
         }
 
-        window.addEventListener('keydown', (event) => {
+        // 共用的判定核心邏輯（接收按鍵代號）
+        function handleInput(pressedKey) {
             if (!gameStarted) return;
 
-            if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(event.key)) {
-                event.preventDefault();
-            }
-
-            let pressedKey = event.code;
-            if (event.key === ' ') pressedKey = 'Space';
-
-            if (['Space', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(pressedKey)) {
-                triggerFlash();
-            }
+            triggerFlash();
 
             const currentTime = video.currentTime;
             let matchedNote = null;
@@ -377,7 +371,29 @@
             }
             
             scoreDisplay.textContent = `${score}分`;
+        }
+
+        // 電腦鍵盤事件
+        window.addEventListener('keydown', (event) => {
+            if (!gameStarted) return;
+
+            if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(event.key)) {
+                event.preventDefault();
+            }
+
+            let pressedKey = event.code;
+            if (event.key === ' ') pressedKey = 'Space';
+
+            if (['Space', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(pressedKey)) {
+                handleInput(pressedKey);
+            }
         });
+
+        // 手機觸控白色圓圈事件（等同按下 Space）
+        judgeLine.addEventListener('touchstart', (event) => {
+            event.preventDefault(); // 防止觸發預設的滑鼠模擬事件或雙擊縮放
+            handleInput('Space');
+        }, { passive: false });
     </script>
 
 </body>
