@@ -154,7 +154,6 @@
         <div style="position: relative; width: 900px; margin: 0 auto;">
             <video id="game-video" src="music.mp4" controls playsinline></video>
             <div id="start-screen">
-                <!-- 初始狀態設定為 disabled 並顯示載入中 -->
                 <button id="start-btn" disabled>載入中...</button>
             </div>
         </div>
@@ -175,7 +174,7 @@
         { "time": 6.8, "key": "Space", "type": "space" },
         { "time": 7.8, "key": "Space", "type": "space" },
         { "time": 8.7, "key": "Space", "type": "space" },
-        { "time": 9.5, "key": "Space", "type": "space" },
+        { "time": 9.7, "key": "Space", "type": "space" },
         { "time": 10.5, "key": "Space", "type": "space" }
     ]
     </script>
@@ -207,20 +206,18 @@
                 missed: false
             }));
 
-        // 監聽影片是否可以順暢播放（canplaythrough），好了之後才解鎖按鈕
         video.addEventListener('canplaythrough', () => {
             startBtn.disabled = false;
             startBtn.textContent = "點擊開始遊戲";
         });
 
-        // 如果影片已經在快取中載入完成，手動觸發一次防範事件漏接
         if (video.readyState >= 4) {
             startBtn.disabled = false;
             startBtn.textContent = "點擊開始遊戲";
         }
 
         startBtn.addEventListener('click', () => {
-            if (startBtn.disabled) return; // 確保未解鎖時不能點擊
+            if (startBtn.disabled) return;
             startScreen.style.display = 'none';
             video.play();
             gameStarted = true;
@@ -297,7 +294,8 @@
         function updateGame() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            if (gameStarted && !video.paused && !video.ended) {
+            // 移除了 !video.paused 的限制，只要遊戲開始且未結束，暫停時也能持續繪製當前時間的音符
+            if (gameStarted && !video.ended) {
                 const currentTime = video.currentTime;
 
                 chart.forEach((noteData) => {
@@ -307,6 +305,9 @@
 
                     if (timeDiff < -HIT_WINDOW) {
                         noteData.missed = true;
+                        score -= 1; 
+                        scoreDisplay.textContent = `${score}分`;
+                        feedback.textContent = "漏拍";
                         return;
                     }
 
