@@ -11,20 +11,23 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             text-align: center;
             margin: 0;
-            padding-top: 20px;
+            padding: 10px;
+            overflow-x: hidden; /* 防止任何水平卷軸產生 */
         }
 
-        /* 整個遊戲容器寬度保持 1200px 置中 */
+        /* 整個遊戲容器改為響應式，最大寬度 1200px，並完美置中 */
         #game-container {
             margin: 0 auto;
-            width: 1200px;
+            width: 100%;
+            max-width: 1200px;
             position: relative;
         }
 
-        /* YouTube 播放器外框維持原本的 900px 寬度 */
+        /* YouTube 播放器外框改為響應式寬度 (最大 900px，手機橫放會自動縮小) */
         #player-container {
-            width: 900px;
-            height: 506px; /* 16:9 比例高度 (900 * 9 / 16) */
+            width: 100%;
+            max-width: 900px;
+            aspect-ratio: 16 / 9; /* 自動維持 16:9 比例 */
             margin: 0 auto;
             border: 3px solid #444;
             border-radius: 12px;
@@ -45,9 +48,9 @@
         #start-screen {
             position: absolute;
             top: 0;
-            left: calc(50% - 450px);
-            width: 900px;
-            height: 506px;
+            left: 0;
+            width: 100%;
+            height: 100%;
             background-color: rgba(0, 0, 0, 0.85);
             display: flex;
             flex-direction: column;
@@ -83,10 +86,11 @@
             box-shadow: none;
         }
 
-        /* 儀表板區域：寬度 1200px */
+        /* 儀表板區域：改為響應式滿版，最大 1200px */
         #dashboard {
             margin-top: 15px;
-            width: 1200px;
+            width: 100%;
+            max-width: 1200px;
             height: 160px;
             background-color: #333;
             border: 3px solid #555;
@@ -96,9 +100,11 @@
             display: flex;
             align-items: center;
             box-sizing: border-box;
+            margin-left: auto;
+            margin-right: auto;
         }
 
-        /* 分數顯示在白色圓圈左邊 */
+        /* 分數顯示位置 */
         #score-display {
             position: absolute;
             left: 40px;
@@ -108,7 +114,7 @@
             z-index: 10;
         }
 
-        /* 靜態判定區放大 (左側目標圓圈位置維持原位) */
+        /* 靜態判定區 (左側目標圓圈) */
         #judge-line {
             position: absolute;
             left: 170px;
@@ -139,7 +145,7 @@
             animation: flashEffect 0.15s ease;
         }
 
-        /* Canvas 軌道畫布配合儀表板寬度 */
+        /* Canvas 軌道畫布 */
         #game-canvas {
             position: absolute;
             left: 0;
@@ -167,10 +173,9 @@
         <div id="player-container">
             <!-- YouTube Player 將會置入在此 div 內 -->
             <div id="youtube-player"></div>
-        </div>
-
-        <div id="start-screen">
-            <button id="start-btn" disabled>載入中...</button>
+            <div id="start-screen">
+                <button id="start-btn" disabled>載入中...</button>
+            </div>
         </div>
         
         <div id="dashboard">
@@ -214,7 +219,7 @@
 
         let score = 0;
         let gameStarted = false;
-        let lastCurrentTime = 0; // 用來偵測是否手動拉動進度條 (Seeking)
+        let lastCurrentTime = 0;
 
         const rawChart = JSON.parse(document.getElementById('chart-data').textContent);
         const chart = rawChart
@@ -225,12 +230,11 @@
                 missed: false
             }));
 
-        // YouTube API 準備完成時會自動呼叫這個全域函式
         window.onYouTubeIframeAPIReady = function() {
             player = new YT.Player('youtube-player', {
-                height: '506',
-                width: '900',
-                videoId: '6luQN1eA3_8', // 目標 YouTube 影片 ID
+                height: '100%',
+                width: '100%',
+                videoId: '6luQN1eA3_8',
                 playerVars: {
                     'playsinline': 1,
                     'controls': 1,
@@ -243,16 +247,12 @@
             });
         };
 
-        // 當 YouTube 影片載入就緒
         function onPlayerReady(event) {
             startBtn.disabled = false;
             startBtn.textContent = "點擊開始遊戲";
         }
 
-        // 監聽 YouTube 播放器狀態變化
-        function onPlayerStateChange(event) {
-            // 當影片開始播放或暫停時，這裡可以做對應處理
-        }
+        function onPlayerStateChange(event) {}
 
         startBtn.addEventListener('click', () => {
             if (startBtn.disabled) return;
@@ -327,7 +327,6 @@
             if (gameStarted && player && typeof player.getCurrentTime === 'function') {
                 const currentTime = player.getCurrentTime();
 
-                // 偵測玩家是否透過 YouTube 內建控制條快轉或倒退 (Seeking)
                 if (Math.abs(currentTime - lastCurrentTime) > 0.5) {
                     chart.forEach(note => {
                         if (note.time >= currentTime - HIT_WINDOW) {
@@ -338,7 +337,6 @@
                 }
                 lastCurrentTime = currentTime;
 
-                // 檢查播放狀態（YT.PlayerState.ENDED 代碼為 0）
                 if (player.getPlayerState() !== YT.PlayerState.ENDED) {
                     chart.forEach((noteData) => {
                         if (noteData.hit || noteData.missed) return;
@@ -374,7 +372,6 @@
             judgeLine.classList.add('flash');
         }
 
-        // 共用的判定核心邏輯
         function handleInput(pressedKey) {
             if (!gameStarted || !player) return;
 
@@ -414,7 +411,6 @@
             scoreDisplay.textContent = `${score}分`;
         }
 
-        // 電腦鍵盤事件
         window.addEventListener('keydown', (event) => {
             if (!gameStarted) return;
 
@@ -430,7 +426,6 @@
             }
         });
 
-        // 手機觸控白色圓圈事件
         judgeLine.addEventListener('touchstart', (event) => {
             event.preventDefault();
             handleInput('Space');
