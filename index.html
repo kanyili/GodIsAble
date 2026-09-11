@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>上帝能夠 - 太鼓達人</title>
+    <title>大山為我挪開 - 太鼓達人</title>
     <style>
         body {
             background-color: #1a1a1a;
@@ -25,11 +25,17 @@
             height: 760px;
             position: relative;
             transform-origin: center center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         #game-container {
             width: 1200px;
             position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         #player-wrapper {
@@ -40,7 +46,7 @@
 
         #player-container {
             width: 900px;
-            height: 506px;
+            height: 60px; /* 依照第二張圖將高度改扁，讓上下黑邊框變得很窄 */
             margin: 0 auto;
             border: 3px solid #444;
             border-radius: 12px;
@@ -60,35 +66,6 @@
 
         #youtube-player {
             display: none; /* 預設隱藏，等本機失敗再切換 */
-        }
-
-        .side-judge-btn {
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 90px;
-            height: 90px;
-            background-color: rgba(255, 255, 255, 0.1);
-            border: 4px solid #eee;
-            border-radius: 50%;
-            z-index: 25;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 40px;
-            color: #fff;
-            box-shadow: 0 0 15px rgba(255,255,255,0.3);
-            touch-action: manipulation;
-            cursor: pointer;
-            user-select: none;
-        }
-
-        #left-side-btn {
-            left: -150px;
-        }
-
-        #right-side-btn {
-            right: -150px;
         }
 
         #start-screen {
@@ -132,7 +109,7 @@
         }
 
         #dashboard {
-            margin-top: 15px;
+            margin-bottom: 15px;
             width: 1200px;
             height: 160px;
             background-color: #333;
@@ -182,16 +159,9 @@
             color: #fff;
             box-shadow: 0 0 15px rgba(255,255,255,0.3);
             transition: transform 0.1s;
-            touch-action: manipulation;
-            cursor: pointer;
+            user-select: none;
         }
 
-        @keyframes flashEffect {
-            0% { transform: scale(1) translateY(-50%); border-color: #eee; background-color: rgba(255,255,255,0.1); }
-            50% { transform: scale(1.15) translateY(-43%); border-color: #ffcc00; background-color: rgba(255,204,0,0.4); box-shadow: 0 0 25px #ffcc00; }
-            100% { transform: scale(1) translateY(-50%); border-color: #eee; background-color: rgba(255,255,255,0.1); }
-        }
-        
         @keyframes flashEffectBottom {
             0% { transform: scale(1); border-color: #eee; background-color: rgba(255,255,255,0.1); }
             50% { transform: scale(1.15); border-color: #ffcc00; background-color: rgba(255,204,0,0.4); box-shadow: 0 0 25px #ffcc00; }
@@ -200,10 +170,6 @@
 
         .flash {
             animation: flashEffectBottom 0.15s ease;
-        }
-
-        .side-flash {
-            animation: flashEffect 0.15s ease;
         }
 
         #game-canvas {
@@ -230,13 +196,16 @@
 
     <div id="game-wrapper">
         <div id="game-container">
+            <div id="dashboard">
+                <div id="time-display">00:00:00</div>
+                <div id="score-display">0分</div>
+                <div id="judge-line">◎</div>
+                <canvas id="game-canvas" width="1200" height="160"></canvas>
+            </div>
+
             <div id="player-wrapper">
-                <div id="left-side-btn" class="side-judge-btn">◎</div>
-                <div id="right-side-btn" class="side-judge-btn">◎</div>
-                
                 <div id="player-container">
-                    <!-- 優先讀取本機端 MP4，若出錯則觸發 onerror 轉交 YouTube -->
-                    <video id="local-video" src="music.mp4" playsinline controls></video>
+                    <video id="local-video" src="Mountains_Move_for_Me.mp3" playsinline controls></video>
                     <div id="youtube-player"></div>
                 </div>
 
@@ -245,25 +214,19 @@
                 </div>
             </div>
             
-            <div id="dashboard">
-                <div id="time-display">00:00:00</div>
-                <div id="score-display">0分</div>
-                <div id="judge-line">◎</div>
-                <canvas id="game-canvas" width="1200" height="160"></canvas>
-            </div>
             <div id="feedback"></div>
         </div>
     </div>
 
     <script id="chart-data" type="application/json">
     [
-        { "time": 5.7, "key": "Space", "type": "space" },
-        { "time": 5.9, "key": "Space", "type": "space" },
-        { "time": 6.8, "key": "Space", "type": "space" },
-        { "time": 7.8, "key": "Space", "type": "space" },
-        { "time": 8.7, "key": "Space", "type": "space" },
-        { "time": 9.7, "key": "Space", "type": "space" },
-        { "time": 10.5, "key": "Space", "type": "space" }
+        { "time": "00:05:70", "key": "Space", "type": "space" },
+        { "time": "00:05:90", "key": "Space", "type": "space" },
+        { "time": "00:06:80", "key": "ArrowLeft", "type": "left" },
+        { "time": "00:07:80", "key": "ArrowRight", "type": "right" },
+        { "time": "00:08:70", "key": "ArrowUp", "type": "up" },
+        { "time": "00:09:70", "key": "ArrowDown", "type": "down" },
+        { "time": "00:10:00", "key": "Space", "type": "space" }
     ]
     </script>
 
@@ -288,7 +251,7 @@
 
         let ytPlayer = null;
         let ytApiReady = false;
-        let useYouTube = false; // 標記目前是否切換為 YouTube
+        let useYouTube = false;
 
         const localVideo = document.getElementById('local-video');
         const startScreen = document.getElementById('start-screen');
@@ -296,8 +259,6 @@
         const canvas = document.getElementById('game-canvas');
         const ctx = canvas.getContext('2d');
         const judgeLine = document.getElementById('judge-line');
-        const leftSideBtn = document.getElementById('left-side-btn');
-        const rightSideBtn = document.getElementById('right-side-btn');
         const scoreDisplay = document.getElementById('score-display');
         const timeDisplay = document.getElementById('time-display');
         const feedback = document.getElementById('feedback');
@@ -311,14 +272,33 @@
         let gameStarted = false;
         let lastCurrentTime = 0;
 
+        function parseTimeToSeconds(timeInput) {
+            if (typeof timeInput === 'number') return timeInput;
+            if (typeof timeInput !== 'string') return 0;
+            
+            const parts = timeInput.split(':');
+            if (parts.length === 3) {
+                const minutes = parseInt(parts[0], 10) || 0;
+                const seconds = parseInt(parts[1], 10) || 0;
+                const milliseconds = parseInt(parts[2], 10) || 0;
+                return minutes * 60 + seconds + milliseconds / 100;
+            } else if (parts.length === 2) {
+                const minutes = parseInt(parts[0], 10) || 0;
+                const seconds = parseFloat(parts[1]) || 0;
+                return minutes * 60 + seconds;
+            }
+            return parseFloat(timeInput) || 0;
+        }
+
         const rawChart = JSON.parse(document.getElementById('chart-data').textContent);
         const chart = rawChart
-            .sort((a, b) => a.time - b.time)
             .map(note => ({
                 ...note,
+                time: parseTimeToSeconds(note.time),
                 hit: false,
                 missed: false
-            }));
+            }))
+            .sort((a, b) => a.time - b.time);
 
         function formatTime(seconds) {
             if (isNaN(seconds) || seconds < 0) seconds = 0;
@@ -328,7 +308,6 @@
             return `${m}:${s}:${ms}`;
         }
 
-        // 統一取得目前播放時間的函式
         function getCurrentPlaybackTime() {
             if (useYouTube) {
                 if (ytPlayer && typeof ytPlayer.getCurrentTime === 'function') {
@@ -340,7 +319,6 @@
             }
         }
 
-        // 統一控制播放的函式
         function startPlayback() {
             if (useYouTube) {
                 if (ytPlayer && typeof ytPlayer.playVideo === 'function') {
@@ -355,9 +333,8 @@
             }
         }
 
-        // 當本機 MP4 載入或讀取發生錯誤時觸發
         localVideo.addEventListener('error', () => {
-            console.log("偵測不到本機 MP4，切換為 YouTube 播放。");
+            console.log("偵測不到本機檔案，切換為 YouTube 播放。");
             switchToYouTube();
         });
 
@@ -366,7 +343,6 @@
             localVideo.style.display = 'none';
             document.getElementById('youtube-player').style.display = 'block';
             
-            // 如果 YouTube API 已經就緒，直接建立播放器
             if (ytApiReady && !ytPlayer) {
                 initYouTubePlayer();
             }
@@ -374,7 +350,7 @@
 
         function initYouTubePlayer() {
             ytPlayer = new YT.Player('youtube-player', {
-                height: '506',
+                height: '60',
                 width: '900',
                 videoId: '6luQN1eA3_8',
                 playerVars: {
@@ -384,7 +360,6 @@
                 },
                 events: {
                     'onReady': () => {
-                        // 若此時遊戲已經因為本機失敗而轉過去，就解鎖按鈕
                         if (useYouTube) {
                             startBtn.disabled = false;
                             startBtn.textContent = "點擊開始遊戲";
@@ -394,7 +369,6 @@
             });
         }
 
-        // YouTube API 載入完成回呼
         window.onYouTubeIframeAPIReady = function() {
             ytApiReady = true;
             if (useYouTube) {
@@ -402,7 +376,6 @@
             }
         };
 
-        // 本機影片能夠正常載入時，直接解鎖開始按鈕
         localVideo.addEventListener('loadeddata', () => {
             if (!useYouTube) {
                 startBtn.disabled = false;
@@ -410,7 +383,6 @@
             }
         });
 
-        // 額外保險：若 1.5 秒內本機影片沒有觸發 loadeddata 且也沒報錯，預設就先解鎖讓使用者可以點擊
         setTimeout(() => {
             if (startBtn.disabled && !useYouTube) {
                 startBtn.disabled = false;
@@ -528,13 +500,9 @@
         requestAnimationFrame(updateGame);
 
         function triggerFlash(targetElement) {
-            targetElement.classList.remove('flash', 'side-flash');
+            targetElement.classList.remove('flash');
             void targetElement.offsetWidth;
-            if (targetElement === judgeLine) {
-                targetElement.classList.add('flash');
-            } else {
-                targetElement.classList.add('side-flash');
-            }
+            targetElement.classList.add('flash');
         }
 
         function handleInput(pressedKey, element = judgeLine) {
@@ -590,21 +558,6 @@
                 handleInput(pressedKey, judgeLine);
             }
         });
-
-        judgeLine.addEventListener('touchstart', (event) => {
-            event.preventDefault();
-            handleInput('Space', judgeLine);
-        }, { passive: false });
-
-        leftSideBtn.addEventListener('touchstart', (event) => {
-            event.preventDefault();
-            handleInput('Space', leftSideBtn);
-        }, { passive: false });
-
-        rightSideBtn.addEventListener('touchstart', (event) => {
-            event.preventDefault();
-            handleInput('Space', rightSideBtn);
-        }, { passive: false });
     </script>
 
 </body>
