@@ -144,9 +144,19 @@
             margin-right: auto;
         }
 
+        #time-display {
+            position: absolute;
+            left: 25px;
+            font-size: 24px;
+            font-weight: bold;
+            color: #aaa;
+            z-index: 10;
+            font-family: monospace;
+        }
+
         #score-display {
             position: absolute;
-            left: 40px;
+            left: 155px;
             font-size: 40px;
             font-weight: bold;
             color: #ffcc00;
@@ -155,7 +165,7 @@
 
         #judge-line {
             position: absolute;
-            left: 170px;
+            left: 270px;
             width: 110px;
             height: 110px;
             background-color: rgba(255, 255, 255, 0.1);
@@ -179,7 +189,6 @@
             100% { transform: scale(1) translateY(-50%); border-color: #eee; background-color: rgba(255,255,255,0.1); }
         }
         
-        /* 針對下方圓圈獨立的閃爍動畫（不需要 translateY） */
         @keyframes flashEffectBottom {
             0% { transform: scale(1); border-color: #eee; background-color: rgba(255,255,255,0.1); }
             50% { transform: scale(1.15); border-color: #ffcc00; background-color: rgba(255,204,0,0.4); box-shadow: 0 0 25px #ffcc00; }
@@ -233,6 +242,7 @@
             </div>
             
             <div id="dashboard">
+                <div id="time-display">00:00:00</div>
                 <div id="score-display">0分</div>
                 <div id="judge-line">◎</div>
                 <canvas id="game-canvas" width="1200" height="160"></canvas>
@@ -261,7 +271,7 @@
         function resizeGame() {
             const wrapper = document.getElementById('game-wrapper');
             const baseWidth = 1200;
-            const baseHeight = 840; // 調整過的高寬比基準，確保手機橫放不卡邊
+            const baseHeight = 840;
 
             const scaleX = window.innerWidth / baseWidth;
             const scaleY = window.innerHeight / baseHeight;
@@ -283,10 +293,11 @@
         const leftSideBtn = document.getElementById('left-side-btn');
         const rightSideBtn = document.getElementById('right-side-btn');
         const scoreDisplay = document.getElementById('score-display');
+        const timeDisplay = document.getElementById('time-display');
         const feedback = document.getElementById('feedback');
         
         const PREVIEW_TIME = 1.5; 
-        const JUDGE_X = 225;      
+        const JUDGE_X = 325;      
         const SPAWN_X = 1150;     
         const HIT_WINDOW = 0.2;   
 
@@ -302,6 +313,14 @@
                 hit: false,
                 missed: false
             }));
+
+        function formatTime(seconds) {
+            if (isNaN(seconds) || seconds < 0) seconds = 0;
+            const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+            const s = Math.floor(seconds % 60).toString().padStart(2, '0');
+            const ms = Math.floor((seconds % 1) * 100).toString().padStart(2, '0');
+            return `${m}:${s}:${ms}`;
+        }
 
         window.onYouTubeIframeAPIReady = function() {
             player = new YT.Player('youtube-player', {
@@ -399,6 +418,8 @@
 
             if (gameStarted && player && typeof player.getCurrentTime === 'function') {
                 const currentTime = player.getCurrentTime();
+                
+                timeDisplay.textContent = formatTime(currentTime);
 
                 if (Math.abs(currentTime - lastCurrentTime) > 0.5) {
                     chart.forEach(note => {
@@ -503,19 +524,16 @@
             }
         });
 
-        // 下方圓圈觸控事件
         judgeLine.addEventListener('touchstart', (event) => {
             event.preventDefault();
             handleInput('Space', judgeLine);
         }, { passive: false });
 
-        // 左側圓圈觸控事件 (預設對應 Space 或可自行調整判定)
         leftSideBtn.addEventListener('touchstart', (event) => {
             event.preventDefault();
             handleInput('Space', leftSideBtn);
         }, { passive: false });
 
-        // 右側圓圈觸控事件 (預設對應 Space 或可自行調整判定)
         rightSideBtn.addEventListener('touchstart', (event) => {
             event.preventDefault();
             handleInput('Space', rightSideBtn);
