@@ -22,7 +22,7 @@
 
         #game-wrapper {
             width: 1200px;
-            height: 760px;
+            height: 1100px;
             position: relative;
             transform-origin: center center;
             display: flex;
@@ -38,6 +38,52 @@
             align-items: center;
         }
 
+        #dashboard {
+            margin-bottom: 10px;
+            width: 1200px;
+            height: 160px;
+            background-color: #333;
+            border: 3px solid #555;
+            border-radius: 12px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            box-sizing: border-box;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        #score-display {
+            width: 900px;
+            margin: 0 auto 8px auto;
+            text-align: center;
+            font-size: 28px;
+            font-weight: bold;
+            color: #ffcc00;
+        }
+
+        #lyrics-box {
+            width: 900px;
+            height: auto;
+            max-height: none;
+            margin: 0 auto 8px auto;
+            background-color: rgba(0, 0, 0, 0.4);
+            border: 2px solid #444;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 28px;
+            color: #ddd;
+            text-align: center;
+            padding: 12px 15px;
+            box-sizing: border-box;
+            line-height: 1.4;
+            white-space: pre-wrap;
+            overflow: visible;
+        }
+
         #player-wrapper {
             position: relative;
             width: 900px;
@@ -46,7 +92,7 @@
 
         #player-container {
             width: 900px;
-            height: 60px; /* 依照第二張圖將高度改扁，讓上下黑邊框變得很窄 */
+            height: 50px;
             margin: 0 auto;
             border: 3px solid #444;
             border-radius: 12px;
@@ -56,7 +102,6 @@
             background-color: #000;
         }
 
-        /* 本機影片與 YouTube 容器樣式 */
         #local-video, #youtube-player {
             width: 100%;
             height: 100%;
@@ -65,7 +110,7 @@
         }
 
         #youtube-player {
-            display: none; /* 預設隱藏，等本機失敗再切換 */
+            display: none;
         }
 
         #start-screen {
@@ -108,22 +153,6 @@
             box-shadow: none;
         }
 
-        #dashboard {
-            margin-bottom: 15px;
-            width: 1200px;
-            height: 160px;
-            background-color: #333;
-            border: 3px solid #555;
-            border-radius: 12px;
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            box-sizing: border-box;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
         #time-display {
             position: absolute;
             left: 25px;
@@ -134,13 +163,16 @@
             font-family: monospace;
         }
 
-        #score-display {
+        #feedback {
             position: absolute;
-            left: 155px;
-            font-size: 40px;
+            left: 140px;
+            width: 110px;
+            font-size: 22px;
             font-weight: bold;
-            color: #ffcc00;
+            color: #ff4444;
+            text-align: center;
             z-index: 10;
+            pointer-events: none;
         }
 
         #judge-line {
@@ -181,28 +213,41 @@
             pointer-events: none;
             z-index: 5;
         }
-
-        #feedback {
-            margin-top: 5px;
-            font-size: 22px;
-            font-weight: bold;
-            height: 30px;
-            color: #ff4444;
-            text-align: center;
-        }
     </style>
 </head>
 <body>
 
     <div id="game-wrapper">
         <div id="game-container">
+            <!-- 1. 儀錶板 -->
             <div id="dashboard">
                 <div id="time-display">00:00:00</div>
-                <div id="score-display">0分</div>
+                <div id="feedback"></div>
                 <div id="judge-line">◎</div>
                 <canvas id="game-canvas" width="1200" height="160"></canvas>
             </div>
 
+            <!-- 2. 分數和正確率 -->
+            <div id="score-display">0分 (正確率 0%)</div>
+
+            <!-- 3. 歌詞 -->
+            <div id="lyrics-box">[Verse]
+雖然道路崎嶇 困難險阻
+但我心中知道祢一直都在
+不能明白為何擔此重擔
+但我始終相信 祢一直牽著我
+
+[Chorus]
+大山為我移開 大海有路出來
+我要大聲宣告 耶穌 祢一直都在
+祢手上的釘痕 彰顯十架大愛
+我要大聲宣告 耶穌 祢一直都在
+
+[Bridge]
+祢的話讓我明白 祢愛我永不更改
+祢保守我的心懷 緊握祢雙手不放開</div>
+
+            <!-- 4. mp3 播放框 -->
             <div id="player-wrapper">
                 <div id="player-container">
                     <video id="local-video" src="Mountains_Move_for_Me.mp3" playsinline controls></video>
@@ -213,8 +258,6 @@
                     <button id="start-btn" disabled>載入中...</button>
                 </div>
             </div>
-            
-            <div id="feedback"></div>
         </div>
     </div>
 
@@ -236,7 +279,7 @@
         function resizeGame() {
             const wrapper = document.getElementById('game-wrapper');
             const baseWidth = 1200;
-            const baseHeight = 840;
+            const baseHeight = 1100;
 
             const scaleX = window.innerWidth / baseWidth;
             const scaleY = window.innerHeight / baseHeight;
@@ -269,8 +312,28 @@
         const HIT_WINDOW = 0.2;   
 
         let score = 0;
+        const TOTAL_NOTES = 7;
         let gameStarted = false;
         let lastCurrentTime = 0;
+        let feedbackTimer = null;
+        let playerInputsLog = []; // 儲存玩家按鍵紀錄
+
+        function showFeedback(text) {
+            feedback.textContent = text;
+            if (feedbackTimer) {
+                clearTimeout(feedbackTimer);
+            }
+            feedbackTimer = setTimeout(() => {
+                feedback.textContent = "";
+            }, 1000);
+        }
+
+        function updateScoreDisplay() {
+            let percentage = TOTAL_NOTES > 0 ? Math.round((score / TOTAL_NOTES) * 100) : 0;
+            if (percentage < 0) percentage = 0;
+            if (percentage > 100) percentage = 100;
+            scoreDisplay.textContent = `${score}分 (正確率 ${percentage}%)`;
+        }
 
         function parseTimeToSeconds(timeInput) {
             if (typeof timeInput === 'number') return timeInput;
@@ -319,6 +382,32 @@
             }
         }
 
+        function exportInputLogToTxt() {
+            if (playerInputsLog.length === 0) return;
+
+            let textContent = "遊戲按鍵紀錄\n==================\n";
+            playerInputsLog.forEach((log, index) => {
+                textContent += `${index + 1}. 時間: ${log.time}, 按鍵: ${log.key}\n`;
+            });
+
+            const blob = new Blob([textContent], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'player_inputs_log.txt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        localVideo.addEventListener('ended', () => {
+            if (gameStarted) {
+                gameStarted = false;
+                exportInputLogToTxt();
+            }
+        });
+
         function startPlayback() {
             if (useYouTube) {
                 if (ytPlayer && typeof ytPlayer.playVideo === 'function') {
@@ -350,7 +439,7 @@
 
         function initYouTubePlayer() {
             ytPlayer = new YT.Player('youtube-player', {
-                height: '60',
+                height: '50',
                 width: '900',
                 videoId: '6luQN1eA3_8',
                 playerVars: {
@@ -363,6 +452,13 @@
                         if (useYouTube) {
                             startBtn.disabled = false;
                             startBtn.textContent = "點擊開始遊戲";
+                        }
+                    },
+                    'onStateChange': (event) => {
+                        // YT.PlayerState.ENDED 代表播放結束 (數值為 0)
+                        if (event.data === 0 && gameStarted) {
+                            gameStarted = false;
+                            exportInputLogToTxt();
                         }
                     }
                 }
@@ -405,15 +501,21 @@
             let baseColor = '#ffffff';
             let glowColor = 'rgba(255, 255, 255, 0.6)';
 
-            if (type === 'left') { baseColor = '#4a90e2'; glowColor = 'rgba(74, 144, 226, 0.8)'; }
-            else if (type === 'right') { baseColor = '#e04a4a'; glowColor = 'rgba(224, 74, 74, 0.8)'; }
-            else if (type === 'up') { baseColor = '#7ed321'; glowColor = 'rgba(126, 211, 33, 0.8)'; }
-            else if (type === 'down') { baseColor = '#b8e986'; glowColor = 'rgba(184, 233, 134, 0.8)'; }
+            if (type === 'left') { baseColor = '#4a90e2'; glowColor = 'rgba(74, 144, 226, 0.6)'; }
+            else if (type === 'right') { baseColor = '#e04a4a'; glowColor = 'rgba(224, 74, 74, 0.6)'; }
+            else if (type === 'up') { baseColor = '#2ecc71'; glowColor = 'rgba(46, 204, 113, 0.6)'; }   // 上：清爽綠色
+            else if (type === 'down') { baseColor = '#f1c40f'; glowColor = 'rgba(241, 196, 15, 0.6)'; } // 下：醒目黃色
             else if (type === 'space') { baseColor = '#ffffff'; glowColor = 'rgba(255, 255, 255, 0.8)'; }
 
             ctx.shadowColor = glowColor;
             ctx.shadowBlur = 12;
-            ctx.fillStyle = 'rgba(30, 30, 30, 0.85)';
+
+            if (type === 'space') {
+                ctx.fillStyle = 'rgba(30, 30, 30, 0.85)';
+            } else {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0)';
+            }
+
             ctx.beginPath();
             ctx.arc(0, 0, radius, 0, Math.PI * 2);
             ctx.fill();
@@ -426,13 +528,13 @@
             ctx.fillStyle = baseColor;
 
             if (type === 'space') {
-                ctx.font = 'bold 16px sans-serif';
+                ctx.font = 'bold 35px sans-serif';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
-                ctx.fillText('SPACE', 0, 0);
+                ctx.fillText('S', 0, 0);
             } else {
                 ctx.beginPath();
-                ctx.lineWidth = 5;
+                ctx.lineWidth = 10;
                 ctx.lineCap = 'round';
                 ctx.lineJoin = 'round';
 
@@ -479,9 +581,9 @@
 
                     if (timeDiff < -HIT_WINDOW) {
                         noteData.missed = true;
-                        score -= 1; 
-                        scoreDisplay.textContent = `${score}分`;
-                        feedback.textContent = "漏拍";
+                        score -= 0; 
+                        updateScoreDisplay();
+                        showFeedback("沒按到");
                         return;
                     }
 
@@ -511,17 +613,32 @@
             triggerFlash(element);
 
             const currentTime = getCurrentPlaybackTime();
+
+            // 記錄玩家按下的時間與按鍵內容
+            playerInputsLog.push({
+                time: formatTime(currentTime),
+                key: pressedKey
+            });
+
             let matchedNote = null;
+            let earlyNoteExists = false;
 
             for (let i = 0; i < chart.length; i++) {
                 const note = chart[i];
                 if (!note.hit && !note.missed) {
-                    const timeDiff = currentTime - note.time;
+                    const timeDiff = currentTime - note.time; 
+                    
+                    if (timeDiff < -HIT_WINDOW) {
+                        earlyNoteExists = true;
+                        break;
+                    }
+
                     if (Math.abs(timeDiff) <= HIT_WINDOW) {
                         matchedNote = note;
                         break;
                     }
-                    if (timeDiff < -HIT_WINDOW) {
+
+                    if (timeDiff > HIT_WINDOW) {
                         break; 
                     }
                 }
@@ -531,17 +648,20 @@
                 if (pressedKey === matchedNote.key) {
                     score += 1;
                     matchedNote.hit = true;
-                    feedback.textContent = "";
+                    showFeedback("Good"); 
                 } else {
-                    score -= 1;
-                    feedback.textContent = "按錯鍵";
+                    score -= 0;
+                    showFeedback("按錯啦"); 
                 }
+            } else if (earlyNoteExists) {
+                score -= 0;
+                showFeedback("太快了");
             } else {
-                score -= 1;
-                feedback.textContent = "太快了";
+                score -= 0;
+                showFeedback("幹嘛亂按？");
             }
             
-            scoreDisplay.textContent = `${score}分`;
+            updateScoreDisplay();
         }
 
         window.addEventListener('keydown', (event) => {
@@ -558,6 +678,8 @@
                 handleInput(pressedKey, judgeLine);
             }
         });
+
+        updateScoreDisplay();
     </script>
 
 </body>
