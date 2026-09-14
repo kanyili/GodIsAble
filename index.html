@@ -103,7 +103,7 @@
             background-color: #000;
         }
 
-        #local-video {
+        #local-audio {
             width: 100%;
             display: block;
         }
@@ -244,7 +244,7 @@
             <!-- 4. mp3 播放框 -->
             <div id="player-wrapper">
                 <div id="player-container">
-                    <audio id="local-video" src="Mountains_Move_for_Me.mp3" controls></audio>
+                    <audio id="local-audio" src="Mountains_Move_for_Me.mp3" controls></audio>
                     <div id="start-screen">
                         <button id="start-btn" disabled>載入中...</button>
                     </div>
@@ -536,7 +536,7 @@
         window.addEventListener('orientationchange', resizeGame);
         resizeGame();
 
-        const localVideo = document.getElementById('local-video');
+        const localaudio = document.getElementById('local-audio');
         const startScreen = document.getElementById('start-screen');
         const startBtn = document.getElementById('start-btn');
         const canvas = document.getElementById('game-canvas');
@@ -622,7 +622,7 @@ function formatTime(seconds) {
         }
 
         function getCurrentPlaybackTime() {
-            return localVideo.currentTime;
+            return localaudio.currentTime;
         }
 
 function getNoteType(key) {
@@ -685,7 +685,7 @@ function exportInputLogToTxt() {
 
 
 
-localVideo.addEventListener('ended', () => {
+localaudio.addEventListener('ended', () => {
     if (gameStarted) {
         gameStarted = false;
 
@@ -697,16 +697,16 @@ localVideo.addEventListener('ended', () => {
 
 
         function startPlayback() {
-            localVideo.play().catch(err => {
+            localaudio.play().catch(err => {
                 console.log("本機音/影片播放失敗", err);
             });
         }
 
-        localVideo.addEventListener('error', () => {
+        localaudio.addEventListener('error', () => {
             console.log("載入本機檔案發生錯誤。");
         });
 
-        localVideo.addEventListener('loadeddata', () => {
+        localaudio.addEventListener('loadeddata', () => {
             startBtn.disabled = false;
             startBtn.textContent = "點擊開始遊戲";
         });
