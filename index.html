@@ -257,6 +257,7 @@
 
 <script id="chart-data" type="application/json">
 [
+
     { "time": "00:01:35", "key": "Space", "type": "space" },
     { "time": "00:02:92", "key": "Space", "type": "space" },
     { "time": "00:04:50", "key": "Space", "type": "space" },
@@ -515,6 +516,8 @@
     { "time": "03:32:32", "key": "ArrowDown", "type": "down" },
     { "time": "03:32:48", "key": "Space", "type": "space" },
     { "time": "03:32:68", "key": "ArrowUp", "type": "up" }
+
+
 ]
 </script>
 
@@ -573,30 +576,34 @@
             scoreDisplay.textContent = `${score}分 (正確率 ${percentage}%)`;
         }
 
-        const rawChart = JSON.parse(
-            document.getElementById('chart-data').textContent
-        );
+const rawChart = JSON.parse(
+    document.getElementById('chart-data').textContent
+);
 
-        function chartTimeToSeconds(timeString) {
-            const parts = timeString.split(':');
-            const minutes = parseInt(parts[0], 10);
-            const seconds = parseInt(parts, 10);
-            const hundredths = parseInt(parts, 10);
-            return minutes * 60 + seconds + hundredths / 100;
-        }
+// 把遊戲畫面格式「MM:SS:MS」轉成秒數
+function chartTimeToSeconds(timeString) {
+    const parts = timeString.split(':');
 
-        const chart = rawChart
-            .map(note => ({
-                ...note,
-                time: chartTimeToSeconds(note.time),
-                hit: false,
-                missed: false
-            }))
-            .sort((a, b) => a.time - b.time);
+    const minutes = parseInt(parts[0], 10);
+    const seconds = parseInt(parts[1], 10);
+    const hundredths = parseInt(parts[2], 10);
 
-        const TOTAL_NOTES = chart.length;
+    return minutes * 60 + seconds + hundredths / 100;
+}
 
-        function formatTime(seconds) {
+const chart = rawChart
+    .map(note => ({
+        ...note,
+        time: chartTimeToSeconds(note.time),
+        hit: false,
+        missed: false
+    }))
+    .sort((a, b) => a.time - b.time);
+
+const TOTAL_NOTES = chart.length;
+
+function formatTime(seconds) {
+
             if (isNaN(seconds) || seconds < 0) seconds = 0;
             const m = Math.floor(seconds / 60).toString().padStart(2, '0');
             const s = Math.floor(seconds % 60).toString().padStart(2, '0');
@@ -608,50 +615,65 @@
             return localVideo.currentTime;
         }
 
-        function getNoteType(key) {
-            switch (key) {
-                case 'ArrowLeft': return 'left';
-                case 'ArrowRight': return 'right';
-                case 'ArrowUp': return 'up';
-                case 'ArrowDown': return 'down';
-                case 'Space': return 'space';
-                default: return '';
-            }
-        }
+function getNoteType(key) {
+    switch (key) {
+        case 'ArrowLeft':
+            return 'left';
 
-        function exportInputLogToTxt() {
-            if (playerInputsLog.length === 0) return;
+        case 'ArrowRight':
+            return 'right';
 
-            const chartData = playerInputsLog.map(log => ({
-                time: log.time,
-                key: log.key,
-                type: getNoteType(log.key)
-            }));
+        case 'ArrowUp':
+            return 'up';
 
-            const textContent =
-                '[\n' +
-                chartData.map(note =>
-                    `    { "time": "${note.time}", "key": "${note.key}", "type": "${note.type}" }`
-                ).join(',\n') +
-                '\n]';
+        case 'ArrowDown':
+            return 'down';
 
-            const blob = new Blob(
-                [textContent],
-                { type: 'application/json;charset=utf-8' }
-            );
+        case 'Space':
+            return 'space';
 
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
+        default:
+            return '';
+    }
+}
 
-            a.href = url;
-            a.download = 'chart-data.json';
 
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
+function exportInputLogToTxt() {
+    if (playerInputsLog.length === 0) return;
 
-            URL.revokeObjectURL(url);
-        }
+    const chartData = playerInputsLog.map(log => ({
+        time: log.time,
+        key: log.key,
+        type: getNoteType(log.key)
+    }));
+
+    // 每筆資料一行
+    const textContent =
+        '[\n' +
+        chartData.map(note =>
+            `    { "time": "${note.time}", "key": "${note.key}", "type": "${note.type}" }`
+        ).join(',\n') +
+        '\n]';
+
+    const blob = new Blob(
+        [textContent],
+        { type: 'application/json;charset=utf-8' }
+    );
+
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+
+    a.href = url;
+    a.download = 'chart-data.json';
+
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+
+    URL.revokeObjectURL(url);
+}
+
+
 
         localVideo.addEventListener('ended', () => {
             if (gameStarted) {
@@ -690,7 +712,7 @@
             let baseColor = '#ffffff';
             let glowColor = 'rgba(255, 255, 255, 0.6)';
 
-            if (type === 'left') { baseColor = '#4a90e2'; glowColor = 'rgba(74, 144, 226, 0.6);'; }
+            if (type === 'left') { baseColor = '#4a90e2'; glowColor = 'rgba(74, 144, 226, 0.6)'; }
             else if (type === 'right') { baseColor = '#e04a4a'; glowColor = 'rgba(224, 74, 74, 0.6)'; }
             else if (type === 'up') { baseColor = '#2ecc71'; glowColor = 'rgba(46, 204, 113, 0.6)'; }
             else if (type === 'down') { baseColor = '#f1c40f'; glowColor = 'rgba(241, 196, 15, 0.6)'; }
