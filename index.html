@@ -223,8 +223,8 @@
                 <canvas id="game-canvas" width="1200" height="160"></canvas>
             </div>
 
-            <!-- 2. 分數和正確率 -->
-            <div id="score-display">0分 (正確率 0.0%)</div>
+            <!-- 2. 分數和完成度 -->
+            <div id="score-display">0分 (完成度 0.0%)</div>
 
             <!-- 3. 歌詞 -->
             <div id="lyrics-box">[Verse]
@@ -585,7 +585,7 @@
 
     // 顯示到小數點 1 位
     scoreDisplay.textContent =
-        `${score}分 (正確率 ${percentage.toFixed(1)}%)`;
+        `${score}分 (完成度 ${percentage.toFixed(1)}%)`;
 }
 
 const rawChart = JSON.parse(
