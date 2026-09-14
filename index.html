@@ -224,7 +224,7 @@
             </div>
 
             <!-- 2. 分數和正確率 -->
-            <div id="score-display">0分 (正確率 0%)</div>
+            <div id="score-display">0分 (正確率 0.0%)</div>
 
             <!-- 3. 歌詞 -->
             <div id="lyrics-box">[Verse]
@@ -559,6 +559,12 @@
         let feedbackTimer = null;
         let playerInputsLog = [];
 
+        // 是否紀錄玩家按鍵
+        // true  = 開啟紀錄
+        // false = 暫停紀錄
+        const RECORD_INPUTS = false;
+
+
         function showFeedback(text) {
             feedback.textContent = text;
             if (feedbackTimer) {
@@ -570,11 +576,17 @@
         }
 
         function updateScoreDisplay() {
-            let percentage = TOTAL_NOTES > 0 ? Math.round((score / TOTAL_NOTES) * 100) : 0;
-            if (percentage < 0) percentage = 0;
-            if (percentage > 100) percentage = 100;
-            scoreDisplay.textContent = `${score}分 (正確率 ${percentage}%)`;
-        }
+    let percentage = TOTAL_NOTES > 0
+        ? (score / TOTAL_NOTES) * 100
+        : 0;
+
+    // 限制在 0% ～ 100%
+    percentage = Math.max(0, Math.min(100, percentage));
+
+    // 顯示到小數點 1 位
+    scoreDisplay.textContent =
+        `${score}分 (正確率 ${percentage.toFixed(1)}%)`;
+}
 
 const rawChart = JSON.parse(
     document.getElementById('chart-data').textContent
@@ -675,12 +687,16 @@ function exportInputLogToTxt() {
 
 
 
-        localVideo.addEventListener('ended', () => {
-            if (gameStarted) {
-                gameStarted = false;
-                exportInputLogToTxt();
-            }
-        });
+localVideo.addEventListener('ended', () => {
+    if (gameStarted) {
+        gameStarted = false;
+
+        if (RECORD_INPUTS) {
+            exportInputLogToTxt();
+        }
+    }
+});
+
 
         function startPlayback() {
             localVideo.play().catch(err => {
@@ -825,10 +841,12 @@ function exportInputLogToTxt() {
 
             const currentTime = getCurrentPlaybackTime();
 
-            playerInputsLog.push({
-                time: formatTime(currentTime),
-                key: pressedKey
-            });
+if (RECORD_INPUTS) {
+    playerInputsLog.push({
+        time: formatTime(currentTime),
+        key: pressedKey
+    });
+}
 
             let matchedNote = null;
             let earlyNoteExists = false;
@@ -858,17 +876,17 @@ function exportInputLogToTxt() {
                 if (pressedKey === matchedNote.key) {
                     score += 1;
                     matchedNote.hit = true;
-                    showFeedback("Good"); 
+                    showFeedback(""); 
                 } else {
                     score -= 0;
                     showFeedback("QQ"); 
                 }
             } else if (earlyNoteExists) {
                 score -= 0;
-                showFeedback("too fast");
+                showFeedback("太快");
             } else {
                 score -= 0;
-                showFeedback("亂按？");
+                showFeedback("");
             }
             
             updateScoreDisplay();
