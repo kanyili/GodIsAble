@@ -188,15 +188,74 @@
             user-select: none;
         }
 
-        @keyframes flashEffectBottom {
-            0% { transform: scale(1); border-color: #eee; background-color: rgba(255,255,255,0.1); }
-            50% { transform: scale(1.15); border-color: #ffcc00; background-color: rgba(255,204,0,0.4); box-shadow: 0 0 25px #ffcc00; }
-            100% { transform: scale(1); border-color: #eee; background-color: rgba(255,255,255,0.1); }
-        }
+/* 答對：綠色 */
+@keyframes flashCorrect {
+    0% {
+        transform: scale(1);
+        border-color: #eee;
+        background-color: rgba(255,255,255,0.1);
+    }
+    50% {
+        transform: scale(1.15);
+        border-color: #2ecc71;
+        background-color: rgba(46,204,113,0.4);
+        box-shadow: 0 0 25px #2ecc71;
+    }
+    100% {
+        transform: scale(1);
+        border-color: #eee;
+        background-color: rgba(255,255,255,0.1);
+    }
+}
 
-        .flash {
-            animation: flashEffectBottom 0.15s ease;
-        }
+/* 答錯：紅色 */
+@keyframes flashWrong {
+    0% {
+        transform: scale(1);
+        border-color: #eee;
+        background-color: rgba(255,255,255,0.1);
+    }
+    50% {
+        transform: scale(1.15);
+        border-color: #ff4444;
+        background-color: rgba(255,68,68,0.4);
+        box-shadow: 0 0 25px #ff4444;
+    }
+    100% {
+        transform: scale(1);
+        border-color: #eee;
+        background-color: rgba(255,255,255,0.1);
+    }
+}
+
+/* 太快：黃色 */
+@keyframes flashEarly {
+    0%, 100% {
+        transform: scale(1);
+        border-color: #eee;
+        background-color: rgba(255,255,255,0.1);
+        box-shadow: 0 0 15px rgba(255,255,255,0.3);
+    }
+    50% {
+        transform: scale(1.15);
+        border-color: #eee;
+        background-color: rgba(255,255,255,0.1);
+        box-shadow: 0 0 15px rgba(255,255,255,0.3);
+    }
+}
+
+.flash-correct {
+    animation: flashCorrect 0.15s ease;
+}
+
+.flash-wrong {
+    animation: flashWrong 0.15s ease;
+}
+
+.flash-early {
+    animation: flashEarly 0.15s ease;
+}
+
 
         #game-canvas {
             position: absolute;
@@ -706,7 +765,7 @@ localaudio.addEventListener('ended', () => {
             console.log("載入本機檔案發生錯誤。");
         });
 
-        localaudio.addEventListener('loadeddata', () => {
+        localaudio.addEventListener('canplaythrough', () => {
             startBtn.disabled = false;
             startBtn.textContent = "點擊開始遊戲";
         });
@@ -826,69 +885,91 @@ localaudio.addEventListener('ended', () => {
 
         requestAnimationFrame(updateGame);
 
-        function triggerFlash(targetElement) {
-            targetElement.classList.remove('flash');
-            void targetElement.offsetWidth;
-            targetElement.classList.add('flash');
-        }
+function triggerFlash(targetElement, type) {
+    targetElement.classList.remove(
+        'flash-correct',
+        'flash-wrong',
+        'flash-early'
+    );
 
-        function handleInput(pressedKey, element = judgeLine) {
-            if (!gameStarted) return;
+    void targetElement.offsetWidth;
 
-            triggerFlash(element);
-
-            const currentTime = getCurrentPlaybackTime();
-
-if (RECORD_INPUTS) {
-    playerInputsLog.push({
-        time: formatTime(currentTime),
-        key: pressedKey
-    });
+    targetElement.classList.add(`flash-${type}`);
 }
 
-            let matchedNote = null;
-            let earlyNoteExists = false;
 
-            for (let i = 0; i < chart.length; i++) {
-                const note = chart[i];
-                if (!note.hit && !note.missed) {
-                    const timeDiff = currentTime - note.time; 
-                    
-                    if (timeDiff < -HIT_WINDOW) {
-                        earlyNoteExists = true;
-                        break;
-                    }
+        function handleInput(pressedKey, element = judgeLine) {
+    if (!gameStarted) return;
 
-                    if (Math.abs(timeDiff) <= HIT_WINDOW) {
-                        matchedNote = note;
-                        break;
-                    }
+    const currentTime = getCurrentPlaybackTime();
 
-                    if (timeDiff > HIT_WINDOW) {
-                        break; 
-                    }
-                }
+    if (RECORD_INPUTS) {
+        playerInputsLog.push({
+            time: formatTime(currentTime),
+            key: pressedKey
+        });
+    }
+
+    let matchedNote = null;
+    let earlyNoteExists = false;
+
+    for (let i = 0; i < chart.length; i++) {
+        const note = chart[i];
+
+        if (!note.hit && !note.missed) {
+            const timeDiff = currentTime - note.time;
+
+            if (timeDiff < -HIT_WINDOW) {
+                earlyNoteExists = true;
+                break;
             }
 
-            if (matchedNote) {
-                if (pressedKey === matchedNote.key) {
-                    score += 1;
-                    matchedNote.hit = true;
-                    showFeedback(""); 
-                } else {
-                    score -= 0;
-                    showFeedback("QQ"); 
-                }
-            } else if (earlyNoteExists) {
-                score -= 0;
-                showFeedback("太快");
-            } else {
-                score -= 0;
-                showFeedback("");
+            if (Math.abs(timeDiff) <= HIT_WINDOW) {
+                matchedNote = note;
+                break;
             }
-            
-            updateScoreDisplay();
+
+            if (timeDiff > HIT_WINDOW) {
+                break;
+            }
         }
+    }
+
+    // =========================
+    // 判斷結果 + 對應閃光顏色
+    // =========================
+
+    if (matchedNote) {
+
+        // 答對 → 綠色
+        if (pressedKey === matchedNote.key) {
+            score += 1;
+            matchedNote.hit = true;
+
+            triggerFlash(element, 'correct');
+            showFeedback("");
+
+        // 答錯 → 紅色
+        } else {
+            triggerFlash(element, 'wrong');
+            showFeedback("QQ");
+        }
+
+    // 太快 → 黃色
+    } else if (earlyNoteExists) {
+
+        triggerFlash(element, 'early');
+        showFeedback("太快");
+
+    // 沒有音符 → 紅色
+    } else {
+
+        triggerFlash(element, 'wrong');
+        showFeedback("");
+    }
+
+    updateScoreDisplay();
+}
 
         window.addEventListener('keydown', (event) => {
             if (!gameStarted) return;
