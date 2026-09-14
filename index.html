@@ -17,14 +17,15 @@
             height: 100vh;
             display: flex;
             justify-content: center;
-            align-items: center;
+            align-items: flex-start;
         }
 
         #game-wrapper {
             width: 1200px;
             height: 1100px;
             position: relative;
-            transform-origin: center center;
+            transform-origin: top center;
+            margin-top: 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -102,15 +103,11 @@
             background-color: #000;
         }
 
-        #local-video, #youtube-player {
+        #local-video {
             width: 100%;
             height: 100%;
             display: block;
             object-fit: cover;
-        }
-
-        #youtube-player {
-            display: none;
         }
 
         #start-screen {
@@ -124,13 +121,12 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            border-radius: 12px;
             z-index: 30;
         }
 
         #start-btn {
-            padding: 15px 35px;
-            font-size: 24px;
+            padding: 10px 25px;
+            font-size: 20px;
             font-weight: bold;
             background-color: #ffcc00;
             color: #1a1a1a;
@@ -251,29 +247,112 @@
             <div id="player-wrapper">
                 <div id="player-container">
                     <video id="local-video" src="Mountains_Move_for_Me.mp3" playsinline controls></video>
-                    <div id="youtube-player"></div>
-                </div>
-
-                <div id="start-screen">
-                    <button id="start-btn" disabled>載入中...</button>
+                    <div id="start-screen">
+                        <button id="start-btn" disabled>載入中...</button>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <script id="chart-data" type="application/json">
-    [
-        { "time": "00:05:70", "key": "Space", "type": "space" },
-        { "time": "00:05:90", "key": "Space", "type": "space" },
-        { "time": "00:06:80", "key": "ArrowLeft", "type": "left" },
-        { "time": "00:07:80", "key": "ArrowRight", "type": "right" },
-        { "time": "00:08:70", "key": "ArrowUp", "type": "up" },
-        { "time": "00:09:70", "key": "ArrowDown", "type": "down" },
-        { "time": "00:10:00", "key": "Space", "type": "space" }
-    ]
-    </script>
+<script id="chart-data" type="application/json">
+[
 
-    <script src="https://www.youtube.com/iframe_api"></script>
+    { "time": "00:01:35", "key": "Space", "type": "space" },
+    { "time": "00:02:92", "key": "Space", "type": "space" },
+    { "time": "00:04:50", "key": "Space", "type": "space" },
+    { "time": "00:06:08", "key": "Space", "type": "space" },
+    { "time": "00:07:64", "key": "Space", "type": "space" },
+    { "time": "00:09:22", "key": "Space", "type": "space" },
+    { "time": "00:10:80", "key": "Space", "type": "space" },
+    { "time": "00:12:36", "key": "Space", "type": "space" },
+    { "time": "00:13:92", "key": "ArrowDown", "type": "down" },
+    { "time": "00:15:47", "key": "ArrowDown", "type": "down" },
+    { "time": "00:17:06", "key": "ArrowDown", "type": "down" },
+    { "time": "00:18:65", "key": "ArrowDown", "type": "down" },
+    { "time": "00:20:29", "key": "Space", "type": "space" },
+    { "time": "00:21:81", "key": "Space", "type": "space" },
+    { "time": "00:23:37", "key": "Space", "type": "space" },
+    { "time": "00:24:99", "key": "Space", "type": "space" },
+    { "time": "00:26:55", "key": "ArrowUp", "type": "up" },
+    { "time": "00:28:13", "key": "ArrowUp", "type": "up" },
+    { "time": "00:29:71", "key": "ArrowUp", "type": "up" },
+    { "time": "00:31:32", "key": "ArrowUp", "type": "up" },
+    { "time": "00:32:86", "key": "ArrowDown", "type": "down" },
+    { "time": "00:34:43", "key": "ArrowDown", "type": "down" },
+    { "time": "00:36:05", "key": "Space", "type": "space" },
+    { "time": "00:36:83", "key": "ArrowDown", "type": "down" },
+    { "time": "00:37:64", "key": "Space", "type": "space" },
+    { "time": "00:38:39", "key": "ArrowDown", "type": "down" },
+    { "time": "00:39:22", "key": "Space", "type": "space" },
+    { "time": "00:39:98", "key": "ArrowUp", "type": "up" },
+    { "time": "00:40:83", "key": "Space", "type": "space" },
+    { "time": "00:41:59", "key": "ArrowUp", "type": "up" },
+    { "time": "00:42:40", "key": "ArrowDown", "type": "down" },
+    { "time": "00:42:78", "key": "Space", "type": "space" },
+    { "time": "00:43:19", "key": "ArrowDown", "type": "down" },
+    { "time": "00:43:58", "key": "Space", "type": "space" },
+    { "time": "00:43:99", "key": "ArrowDown", "type": "down" },
+    { "time": "00:44:37", "key": "Space", "type": "space" },
+    { "time": "00:44:76", "key": "ArrowDown", "type": "down" },
+    { "time": "00:45:17", "key": "Space", "type": "space" },
+    { "time": "00:45:64", "key": "ArrowUp", "type": "up" },
+    { "time": "00:45:97", "key": "Space", "type": "space" },
+    { "time": "00:46:38", "key": "ArrowUp", "type": "up" },
+    { "time": "00:46:76", "key": "Space", "type": "space" },
+    { "time": "00:47:14", "key": "ArrowUp", "type": "up" },
+    { "time": "00:47:55", "key": "Space", "type": "space" },
+    { "time": "00:47:90", "key": "ArrowUp", "type": "up" },
+    { "time": "00:48:33", "key": "Space", "type": "space" },
+    { "time": "00:48:74", "key": "ArrowDown", "type": "down" },
+    { "time": "00:49:12", "key": "Space", "type": "space" },
+    { "time": "00:49:51", "key": "ArrowDown", "type": "down" },
+    { "time": "00:49:88", "key": "Space", "type": "space" },
+    { "time": "00:50:26", "key": "ArrowDown", "type": "down" },
+    { "time": "00:50:66", "key": "Space", "type": "space" },
+    { "time": "00:51:04", "key": "ArrowDown", "type": "down" },
+    { "time": "00:51:44", "key": "Space", "type": "space" },
+    { "time": "00:51:86", "key": "ArrowUp", "type": "up" },
+    { "time": "00:52:25", "key": "Space", "type": "space" },
+    { "time": "00:52:60", "key": "ArrowUp", "type": "up" },
+    { "time": "00:53:03", "key": "Space", "type": "space" },
+    { "time": "00:53:41", "key": "ArrowUp", "type": "up" },
+    { "time": "00:53:80", "key": "Space", "type": "space" },
+    { "time": "00:54:21", "key": "ArrowUp", "type": "up" },
+    { "time": "00:54:63", "key": "Space", "type": "space" },
+    { "time": "00:55:05", "key": "ArrowDown", "type": "down" },
+    { "time": "00:55:45", "key": "Space", "type": "space" },
+    { "time": "00:55:84", "key": "ArrowDown", "type": "down" },
+    { "time": "00:56:20", "key": "Space", "type": "space" },
+    { "time": "00:56:61", "key": "ArrowDown", "type": "down" },
+    { "time": "00:57:03", "key": "Space", "type": "space" },
+    { "time": "00:57:39", "key": "ArrowDown", "type": "down" },
+    { "time": "00:57:78", "key": "Space", "type": "space" },
+    { "time": "00:58:20", "key": "ArrowUp", "type": "up" },
+    { "time": "00:58:58", "key": "Space", "type": "space" },
+    { "time": "00:58:98", "key": "ArrowUp", "type": "up" },
+    { "time": "00:59:36", "key": "Space", "type": "space" },
+    { "time": "00:59:73", "key": "ArrowUp", "type": "up" },
+    { "time": "01:00:12", "key": "Space", "type": "space" },
+    { "time": "01:00:53", "key": "ArrowUp", "type": "up" },
+    { "time": "01:00:88", "key": "Space", "type": "space" },
+    { "time": "01:01:30", "key": "ArrowDown", "type": "down" },
+    { "time": "01:01:71", "key": "ArrowUp", "type": "up" },
+    { "time": "01:02:09", "key": "ArrowDown", "type": "down" },
+    { "time": "01:02:49", "key": "ArrowUp", "type": "up" },
+    { "time": "01:02:84", "key": "ArrowDown", "type": "down" },
+    { "time": "01:03:25", "key": "ArrowUp", "type": "up" },
+    { "time": "01:03:60", "key": "ArrowDown", "type": "down" },
+    { "time": "01:04:02", "key": "ArrowUp", "type": "up" },
+    { "time": "01:04:48", "key": "ArrowDown", "type": "down" },
+    { "time": "01:05:28", "key": "Space", "type": "space" },
+    { "time": "01:05:49", "key": "ArrowUp", "type": "up" },
+    { "time": "01:05:68", "key": "Space", "type": "space" },
+    { "time": "01:05:89", "key": "ArrowUp", "type": "up" }
+
+
+]
+</script>
 
     <script>
         function resizeGame() {
@@ -292,10 +371,6 @@
         window.addEventListener('orientationchange', resizeGame);
         resizeGame();
 
-        let ytPlayer = null;
-        let ytApiReady = false;
-        let useYouTube = false;
-
         const localVideo = document.getElementById('local-video');
         const startScreen = document.getElementById('start-screen');
         const startBtn = document.getElementById('start-btn');
@@ -312,11 +387,10 @@
         const HIT_WINDOW = 0.2;   
 
         let score = 0;
-        const TOTAL_NOTES = 7;
         let gameStarted = false;
         let lastCurrentTime = 0;
         let feedbackTimer = null;
-        let playerInputsLog = []; // 儲存玩家按鍵紀錄
+        let playerInputsLog = [];
 
         function showFeedback(text) {
             feedback.textContent = text;
@@ -335,35 +409,34 @@
             scoreDisplay.textContent = `${score}分 (正確率 ${percentage}%)`;
         }
 
-        function parseTimeToSeconds(timeInput) {
-            if (typeof timeInput === 'number') return timeInput;
-            if (typeof timeInput !== 'string') return 0;
-            
-            const parts = timeInput.split(':');
-            if (parts.length === 3) {
-                const minutes = parseInt(parts[0], 10) || 0;
-                const seconds = parseInt(parts[1], 10) || 0;
-                const milliseconds = parseInt(parts[2], 10) || 0;
-                return minutes * 60 + seconds + milliseconds / 100;
-            } else if (parts.length === 2) {
-                const minutes = parseInt(parts[0], 10) || 0;
-                const seconds = parseFloat(parts[1]) || 0;
-                return minutes * 60 + seconds;
-            }
-            return parseFloat(timeInput) || 0;
-        }
+const rawChart = JSON.parse(
+    document.getElementById('chart-data').textContent
+);
 
-        const rawChart = JSON.parse(document.getElementById('chart-data').textContent);
-        const chart = rawChart
-            .map(note => ({
-                ...note,
-                time: parseTimeToSeconds(note.time),
-                hit: false,
-                missed: false
-            }))
-            .sort((a, b) => a.time - b.time);
+// 把遊戲畫面格式「MM:SS:MS」轉成秒數
+function chartTimeToSeconds(timeString) {
+    const parts = timeString.split(':');
 
-        function formatTime(seconds) {
+    const minutes = parseInt(parts[0], 10);
+    const seconds = parseInt(parts[1], 10);
+    const hundredths = parseInt(parts[2], 10);
+
+    return minutes * 60 + seconds + hundredths / 100;
+}
+
+const chart = rawChart
+    .map(note => ({
+        ...note,
+        time: chartTimeToSeconds(note.time),
+        hit: false,
+        missed: false
+    }))
+    .sort((a, b) => a.time - b.time);
+
+const TOTAL_NOTES = chart.length;
+
+function formatTime(seconds) {
+
             if (isNaN(seconds) || seconds < 0) seconds = 0;
             const m = Math.floor(seconds / 60).toString().padStart(2, '0');
             const s = Math.floor(seconds % 60).toString().padStart(2, '0');
@@ -372,34 +445,68 @@
         }
 
         function getCurrentPlaybackTime() {
-            if (useYouTube) {
-                if (ytPlayer && typeof ytPlayer.getCurrentTime === 'function') {
-                    return ytPlayer.getCurrentTime();
-                }
-                return 0;
-            } else {
-                return localVideo.currentTime;
-            }
+            return localVideo.currentTime;
         }
 
-        function exportInputLogToTxt() {
-            if (playerInputsLog.length === 0) return;
+function getNoteType(key) {
+    switch (key) {
+        case 'ArrowLeft':
+            return 'left';
 
-            let textContent = "遊戲按鍵紀錄\n==================\n";
-            playerInputsLog.forEach((log, index) => {
-                textContent += `${index + 1}. 時間: ${log.time}, 按鍵: ${log.key}\n`;
-            });
+        case 'ArrowRight':
+            return 'right';
 
-            const blob = new Blob([textContent], { type: 'text/plain;charset=utf-8' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'player_inputs_log.txt';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        }
+        case 'ArrowUp':
+            return 'up';
+
+        case 'ArrowDown':
+            return 'down';
+
+        case 'Space':
+            return 'space';
+
+        default:
+            return '';
+    }
+}
+
+
+function exportInputLogToTxt() {
+    if (playerInputsLog.length === 0) return;
+
+    const chartData = playerInputsLog.map(log => ({
+        time: log.time,
+        key: log.key,
+        type: getNoteType(log.key)
+    }));
+
+    // 每筆資料一行
+    const textContent =
+        '[\n' +
+        chartData.map(note =>
+            `    { "time": "${note.time}", "key": "${note.key}", "type": "${note.type}" }`
+        ).join(',\n') +
+        '\n]';
+
+    const blob = new Blob(
+        [textContent],
+        { type: 'application/json;charset=utf-8' }
+    );
+
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+
+    a.href = url;
+    a.download = 'chart-data.json';
+
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+
+    URL.revokeObjectURL(url);
+}
+
+
 
         localVideo.addEventListener('ended', () => {
             if (gameStarted) {
@@ -409,82 +516,19 @@
         });
 
         function startPlayback() {
-            if (useYouTube) {
-                if (ytPlayer && typeof ytPlayer.playVideo === 'function') {
-                    ytPlayer.playVideo();
-                }
-            } else {
-                localVideo.play().catch(err => {
-                    console.log("本機影片播放失敗，自動切換至 YouTube", err);
-                    switchToYouTube();
-                    if (ytPlayer) ytPlayer.playVideo();
-                });
-            }
-        }
-
-        localVideo.addEventListener('error', () => {
-            console.log("偵測不到本機檔案，切換為 YouTube 播放。");
-            switchToYouTube();
-        });
-
-        function switchToYouTube() {
-            useYouTube = true;
-            localVideo.style.display = 'none';
-            document.getElementById('youtube-player').style.display = 'block';
-            
-            if (ytApiReady && !ytPlayer) {
-                initYouTubePlayer();
-            }
-        }
-
-        function initYouTubePlayer() {
-            ytPlayer = new YT.Player('youtube-player', {
-                height: '50',
-                width: '900',
-                videoId: '6luQN1eA3_8',
-                playerVars: {
-                    'playsinline': 1,
-                    'controls': 1,
-                    'enablejsapi': 1
-                },
-                events: {
-                    'onReady': () => {
-                        if (useYouTube) {
-                            startBtn.disabled = false;
-                            startBtn.textContent = "點擊開始遊戲";
-                        }
-                    },
-                    'onStateChange': (event) => {
-                        // YT.PlayerState.ENDED 代表播放結束 (數值為 0)
-                        if (event.data === 0 && gameStarted) {
-                            gameStarted = false;
-                            exportInputLogToTxt();
-                        }
-                    }
-                }
+            localVideo.play().catch(err => {
+                console.log("本機音/影片播放失敗", err);
             });
         }
 
-        window.onYouTubeIframeAPIReady = function() {
-            ytApiReady = true;
-            if (useYouTube) {
-                initYouTubePlayer();
-            }
-        };
-
-        localVideo.addEventListener('loadeddata', () => {
-            if (!useYouTube) {
-                startBtn.disabled = false;
-                startBtn.textContent = "點擊開始遊戲";
-            }
+        localVideo.addEventListener('error', () => {
+            console.log("載入本機檔案發生錯誤。");
         });
 
-        setTimeout(() => {
-            if (startBtn.disabled && !useYouTube) {
-                startBtn.disabled = false;
-                startBtn.textContent = "點擊開始遊戲";
-            }
-        }, 1500);
+        localVideo.addEventListener('loadeddata', () => {
+            startBtn.disabled = false;
+            startBtn.textContent = "點擊開始遊戲";
+        });
 
         startBtn.addEventListener('click', () => {
             if (startBtn.disabled) return;
@@ -503,8 +547,8 @@
 
             if (type === 'left') { baseColor = '#4a90e2'; glowColor = 'rgba(74, 144, 226, 0.6)'; }
             else if (type === 'right') { baseColor = '#e04a4a'; glowColor = 'rgba(224, 74, 74, 0.6)'; }
-            else if (type === 'up') { baseColor = '#2ecc71'; glowColor = 'rgba(46, 204, 113, 0.6)'; }   // 上：清爽綠色
-            else if (type === 'down') { baseColor = '#f1c40f'; glowColor = 'rgba(241, 196, 15, 0.6)'; } // 下：醒目黃色
+            else if (type === 'up') { baseColor = '#2ecc71'; glowColor = 'rgba(46, 204, 113, 0.6)'; }
+            else if (type === 'down') { baseColor = '#f1c40f'; glowColor = 'rgba(241, 196, 15, 0.6)'; }
             else if (type === 'space') { baseColor = '#ffffff'; glowColor = 'rgba(255, 255, 255, 0.8)'; }
 
             ctx.shadowColor = glowColor;
@@ -614,7 +658,6 @@
 
             const currentTime = getCurrentPlaybackTime();
 
-            // 記錄玩家按下的時間與按鍵內容
             playerInputsLog.push({
                 time: formatTime(currentTime),
                 key: pressedKey
@@ -667,15 +710,17 @@
         window.addEventListener('keydown', (event) => {
             if (!gameStarted) return;
 
-            if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(event.key)) {
+            const allowedKeys = [
+                'Space',
+                'ArrowLeft',
+                'ArrowRight',
+                'ArrowUp',
+                'ArrowDown'
+            ];
+
+            if (allowedKeys.includes(event.code)) {
                 event.preventDefault();
-            }
-
-            let pressedKey = event.code;
-            if (event.key === ' ') pressedKey = 'Space';
-
-            if (['Space', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(pressedKey)) {
-                handleInput(pressedKey, judgeLine);
+                handleInput(event.code, judgeLine);
             }
         });
 
