@@ -5,6 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>大山為我挪開 - 太鼓達人</title>
     <style>
+
+#fireworks-canvas {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    z-index: 100;
+}
+
+
         body {
             background-color: #1a1a1a;
             color: white;
@@ -228,7 +240,7 @@
     }
 }
 
-/* 太快：黃色 */
+/* 太快：白色 */
 @keyframes flashEarly {
     0%, 100% {
         transform: scale(1);
@@ -309,6 +321,7 @@
 </head>
 <body>
 
+    <canvas id="fireworks-canvas"></canvas>
     <div id="game-wrapper">
         <div id="game-container">
             <!-- 1. 儀錶板 -->
@@ -649,6 +662,20 @@
         const startBtn = document.getElementById('start-btn');
         const canvas = document.getElementById('game-canvas');
         const ctx = canvas.getContext('2d');
+
+        const fireworksCanvas = document.getElementById('fireworks-canvas');
+        const fireworksCtx = fireworksCanvas.getContext('2d');
+
+function resizeFireworksCanvas() {
+    fireworksCanvas.width = window.innerWidth;
+    fireworksCanvas.height = window.innerHeight;
+}
+
+window.addEventListener('resize', resizeFireworksCanvas);
+window.addEventListener('orientationchange', resizeFireworksCanvas);
+
+resizeFireworksCanvas();
+
         const judgeLine = document.getElementById('judge-line');
         const scoreDisplay = document.getElementById('score-display');
         const timeDisplay = document.getElementById('time-display');
@@ -661,6 +688,13 @@
 
         let score = 0;
         let gameStarted = false;
+
+// 記錄已經出現到哪一個 10%
+let lastFireworkPercent = 0;
+
+// 煙火粒子
+let fireworks = [];
+
         let lastCurrentTime = 0;
         let feedbackTimer = null;
         let playerInputsLog = [];
@@ -681,24 +715,108 @@
             }, 1000);
         }
 
-        function updateScoreDisplay() {
+function updateScoreDisplay() {
     let percentage = TOTAL_NOTES > 0
         ? (score / TOTAL_NOTES) * 100
         : 0;
 
-    // 限制在 0% ～ 100%
     percentage = Math.max(0, Math.min(100, percentage));
 
-    // 顯示到小數點 1 位
     scoreDisplay.textContent =
         `${score}分 (完成度 ${percentage.toFixed(1)}%)`;
+
+    // 每增加 10% 就放一次煙火
+    const fireworkPercent = Math.floor(percentage / 10) * 10;
+
+    if (
+        fireworkPercent >= 10 &&
+        fireworkPercent > lastFireworkPercent
+    ) {
+        lastFireworkPercent = fireworkPercent;
+        createFirework();
+    }
 }
+
+
+
+function createFirework() {
+
+    const rect = judgeLine.getBoundingClientRect();
+
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+
+    const x = centerX + (Math.random() - 0.5) * 100;
+    const y = centerY + (Math.random() - 0.5) * 100;
+
+    const colors = [
+        '#ffcc00',
+        '#ff4444',
+        '#2ecc71',
+        '#4a90e2',
+        '#ffffff',
+        '#ff66cc'
+    ];
+
+    for (let i = 0; i < 100; i++) {
+
+        const angle = Math.random() * Math.PI * 2;
+        const speed = 2 + Math.random() * 6;
+
+        fireworks.push({
+            x: x,
+            y: y,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed,
+            life: 1,
+            color: colors[Math.floor(Math.random() * colors.length)]
+        });
+    }
+}
+
+
+
+
+function updateFireworks() {
+    fireworksCtx.clearRect(
+        0,
+        0,
+        fireworksCanvas.width,
+        fireworksCanvas.height
+    );
+
+    fireworks.forEach(p => {
+        p.x += p.vx;
+        p.y += p.vy;
+
+        p.vy += 0.05;
+
+        // 空氣阻力
+        p.vx *= 0.98;
+        p.vy *= 0.98;
+
+        p.life -= 0.015;
+
+        fireworksCtx.globalAlpha = Math.max(0, p.life);
+        fireworksCtx.fillStyle = p.color;
+
+        fireworksCtx.beginPath();
+        fireworksCtx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+        fireworksCtx.fill();
+    });
+
+    fireworksCtx.globalAlpha = 1;
+
+    fireworks = fireworks.filter(p => p.life > 0);
+}
+
+
 
 const rawChart = JSON.parse(
     document.getElementById('chart-data').textContent
 );
 
-// 把遊戲畫面格式「MM:SS:MS」轉成秒數
+// 把遊戲畫面格式「MM:SS:百分之一秒」轉成秒數
 function chartTimeToSeconds(timeString) {
     const parts = timeString.split(':');
 
@@ -890,7 +1008,11 @@ localaudio.addEventListener('ended', () => {
         }
 
         function updateGame() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // 更新煙火
+    updateFireworks();
 
             if (gameStarted) {
                 const currentTime = getCurrentPlaybackTime();
